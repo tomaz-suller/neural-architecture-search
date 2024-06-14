@@ -1,0 +1,7 @@
+ipykernel
+mkdocs
+nats_bench
+pip
+python-dotenv
+ruff
+-e .
