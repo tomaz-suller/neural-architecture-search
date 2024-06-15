@@ -49,23 +49,3 @@ if __name__ == "__main__":
         print(f"Iteration {i+1}")
         print(f"\tControl parameter {control_parameter}")
         print(f"\tValidation loss   {current_results.val.loss}")
-
-# def search(dataset, save_path):
-#     ss = NASBench201(dataset, save_path)
-
-#     arch_i = ss.sample(n_samples=1)[0]
-#     vector_i = ss.encode(arch_i)
-#     top1_i = ss.get_info_from_arch(arch_i)["val-acc"]
-#     iterations = 100
-#     for i in range(iterations):
-#         T = temperature(i, iterations)
-#         print("Temperature:", T)
-#         vector_j = random_action(vector_i)
-#         arch_j = ss.decode(vector_j)
-#         top1_j = ss.get_info_from_arch(arch_j)["val-acc"]
-#         print("Top1_i:", top1_i)
-#         print("Top1_j:", top1_j)
-#         if P(top1_i - top1_j, T) > random.random():
-#             arch_i = arch_j
-#             top1_i = top1_j
-#         print(f"Iteration {i+1}/{iterations} - Top1: {top1_i} - Temperature: {T}")
