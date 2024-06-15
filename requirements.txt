@@ -1,3 +1,4 @@
+dvc
 ipykernel
 mkdocs
 numpy

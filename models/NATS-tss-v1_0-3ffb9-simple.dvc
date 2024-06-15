@@ -1,0 +1,6 @@
+outs:
+- md5: aac31fe41ed71229fe9f74403c7220d6.dir
+  size: 1133991813
+  nfiles: 15626
+  hash: md5
+  path: NATS-tss-v1_0-3ffb9-simple
