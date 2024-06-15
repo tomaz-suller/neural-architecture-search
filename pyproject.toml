@@ -61,7 +61,6 @@ select = [
     "A",  # flake8-builtins
     "COM",  # flake8-commas
     "PTH",  # flake8-pathlib
-    "FIX", # flake8-fixme
     "NPY", "PD", # flake8-numpy, pandas-vet
     "PERF", # perflint
     "RUF",  # Ruff specific rules
