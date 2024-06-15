@@ -15,7 +15,7 @@ class Set(str, Enum):
     VAL_TEST = "valtest"
 
 
-class Benchmark(str, Enum):
+class Dataset(str, Enum):
     CIFAR10 = "cifar10-valid"
     CIFAR10_VAL = "cifar10"
     CIFAR100 = "cifar100"
@@ -88,12 +88,12 @@ class ArchitectureResult:
 
 class NatsBenchTopology:
     _api: nats_bench.api_topology.NATStopology
-    _benchmark: Benchmark
+    _benchmark: Dataset
 
     def __init__(
         self,
         path: Path | None,
-        benchmark: Benchmark,
+        benchmark: Dataset,
         eager: bool = False,
         verbose: bool = False,
     ):

@@ -14,7 +14,7 @@ def generate_neighbour(
 
 if __name__ == "__main__":
     from nas import _REPO_ROOT
-    from nas.benchmark.nats_bench import NatsBenchTopology, Benchmark
+    from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
     from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
 
     # TODO Move parameters to configuration file
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # TODO Write utils with paths
     NATS_PATH = _REPO_ROOT / "models" / "NATS-tss-v1_0-3ffb9-simple"
 
-    nats_bench = NatsBenchTopology(NATS_PATH, Benchmark.CIFAR10)
+    nats_bench = NatsBenchTopology(NATS_PATH, Dataset.CIFAR10)
     rng = np.random.default_rng(SEED)
 
     # Start from a random cell topology
