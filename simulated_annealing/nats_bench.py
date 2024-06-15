@@ -87,7 +87,13 @@ class NatsBenchTopology:
     _api: nats_bench.api_topology.NATStopology
     _benchmark: Benchmark
 
-    def __init__(self, path: Path | None, benchmark: Benchmark, eager: bool = False, verbose: bool = False):
+    def __init__(
+        self,
+        path: Path | None,
+        benchmark: Benchmark,
+        eager: bool = False,
+        verbose: bool = False,
+    ):
         self._api = nats_bench.create(str(path), "topology", not eager, verbose)
         self._benchmark = benchmark
 
@@ -104,7 +110,9 @@ class NatsBenchTopology:
 
         index = self._api.query_index_by_arch(str(topology))
         info = self._api.get_more_info(index, self._benchmark, epoch, max_epochs)
-        api_results: nats_bench.api_utils.ArchResults = self._api.query_by_index(index, hp=max_epochs)
+        api_results: nats_bench.api_utils.ArchResults = self._api.query_by_index(
+            index, hp=max_epochs
+        )
         computational_cost = api_results.get_compute_costs(self._benchmark)
 
         return ArchitectureResult(
