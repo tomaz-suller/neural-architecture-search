@@ -1,8 +1,10 @@
 dvc
+hydra-core
 ipykernel
 mkdocs
 numpy
 nats_bench
+omegaconf
 pip
 pre-commit
 python-dotenv

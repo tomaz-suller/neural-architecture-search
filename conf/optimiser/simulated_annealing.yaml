@@ -1,0 +1,5 @@
+algorithm: simulated_annealing
+number_iterations: 100
+cooling_schedule:
+  initial: 1
+  type: linear

@@ -1,0 +1,4 @@
+name: NATS-Bench Topology
+path: models/NATS-tss-v1_0-3ffb9-simple
+edges_per_cell: 6
+dataset: CIFAR10

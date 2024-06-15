@@ -1,0 +1,6 @@
+defaults:
+  - _self_
+  - optimiser: simulated_annealing
+  - benchmark: nats_bench_topology
+
+seed: 42

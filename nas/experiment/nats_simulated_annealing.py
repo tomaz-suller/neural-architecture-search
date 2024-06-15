@@ -1,6 +1,9 @@
-from nas.benchmark.nats_bench import CellTopology, Operation
-
+import hydra
 import numpy as np
+from omegaconf import DictConfig
+
+from nas import _REPO_ROOT
+from nas.benchmark.nats_bench import CellTopology, Operation
 
 
 def generate_neighbour(
@@ -12,30 +15,34 @@ def generate_neighbour(
     return CellTopology(*topology_operations)
 
 
-if __name__ == "__main__":
-    from nas import _REPO_ROOT
+@hydra.main(
+    version_base=None,
+    config_path=str(_REPO_ROOT / "conf"),
+    config_name="config",
+)
+def main(cfg: DictConfig) -> None:
     from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
     from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
 
-    # TODO Move parameters to configuration file
-    ITERATIONS = 100
-    SEED = 42
-    NUMBER_EDGES = 6
-
-    # TODO Write utils with paths
-    NATS_PATH = _REPO_ROOT / "models" / "NATS-tss-v1_0-3ffb9-simple"
-
-    nats_bench = NatsBenchTopology(NATS_PATH, Dataset.CIFAR10)
-    rng = np.random.default_rng(SEED)
+    nats_bench = NatsBenchTopology(
+        _REPO_ROOT / cfg.benchmark.path,
+        Dataset[cfg.benchmark.dataset],
+    )
+    rng = np.random.default_rng(cfg.seed)
 
     # Start from a random cell topology
     current_topology = CellTopology(
-        *(Operation(i) for i in rng.choice(Operation, NUMBER_EDGES))
+        *(Operation(i) for i in rng.choice(Operation, cfg.benchmark.edges_per_cell))
     )
     current_results = nats_bench.query(current_topology)
 
-    cooling_schedule = CoolingSchedule(1, ITERATIONS)
-    for i, control_parameter in enumerate(cooling_schedule.exponential(0.99)):
+    cooling_schedule = CoolingSchedule(
+        cfg.optimiser.cooling_schedule.initial,
+        cfg.optimiser.number_iterations,
+    )
+    parameter_generator = cooling_schedule.linear()
+
+    for i, control_parameter in enumerate(parameter_generator):
         neighbour = generate_neighbour(current_topology, rng)
         neighbour_results = nats_bench.query(neighbour)
         do_transition = accept_transition(
@@ -47,3 +54,7 @@ if __name__ == "__main__":
         print(f"Iteration {i+1}")
         print(f"\tControl parameter {control_parameter}")
         print(f"\tValidation loss   {current_results.val.loss}")
+
+
+if __name__ == "__main__":
+    main()
