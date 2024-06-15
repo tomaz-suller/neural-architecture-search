@@ -1,0 +1,109 @@
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Literal
+
+import nats_bench
+import nats_bench.api_topology
+
+
+class Set(str, Enum):
+    TRAIN = "train"
+    VAL = "valid"
+    TEST = "test"
+    VAL_TEST = "valtest"
+
+
+class Benchmark(str, Enum):
+    CIFAR10 = "cifar10-valid"
+    CIFAR10_VAL = "cifar10"
+    CIFAR100 = "cifar100"
+    IMAGENET = "ImageNet16-120"
+
+
+class Operation(int, Enum):
+    none = 0
+    skip_connect = 1
+    nor_conv_1x1 = 2
+    nor_conv_3x3 = 3
+    avg_pool_3x3 = 4
+
+    def __str__(self) -> str:
+        return self.name
+
+
+@dataclass
+class CellTopology:
+    edge_0_to_1: Operation
+    edge_0_to_2: Operation
+    edge_1_to_2: Operation
+    edge_0_to_3: Operation
+    edge_1_to_3: Operation
+    edge_2_to_3: Operation
+
+    def __str__(self) -> str:
+        return "|{}~0|+|{}~0|{}~1|+|{}~0|{}~1|{}~2|".format(
+            self.edge_0_to_1,
+            self.edge_0_to_2,
+            self.edge_1_to_2,
+            self.edge_0_to_3,
+            self.edge_1_to_3,
+            self.edge_2_to_3,
+        )
+
+
+@dataclass
+class Metrics:
+    loss: float | None
+    accuracy: float | None
+    time_per_epoch: float | None
+    time: float | None
+
+    @staticmethod
+    def from_nats(info: dict[str, float], set_: Set) -> "Metrics":
+        set_name = set_.value
+        return Metrics(
+            loss=info.get(f"{set_name}-loss", None),
+            accuracy=info.get(f"{set_name}-accuracy", None),
+            time_per_epoch=info.get(f"{set_name}-per-time", None),
+            time=info.get(f"{set_name}-all-time", None),
+        )
+
+
+@dataclass
+class ArchitectureResult:
+    index: int
+    train: Metrics
+    val: Metrics | None
+    test: Metrics
+    architecture: CellTopology = field(repr=False)
+
+
+class NatsBenchTopology:
+    _api: nats_bench.api_topology.NATStopology
+    _benchmark: Benchmark
+
+    def __init__(self, path: Path | None, benchmark: Benchmark, eager: bool = False, verbose: bool = False):
+        self._api = nats_bench.create(str(path), "topology", not eager, verbose)
+        self._benchmark = benchmark
+
+    def query(
+        self,
+        topology: CellTopology,
+        epoch: int | None = None,
+        max_epochs: Literal["01", "12", "90", "200"] = "12",
+    ) -> ArchitectureResult:
+        if epoch is not None and int(max_epochs) < epoch:
+            raise ValueError(
+                f"Cannot query epoch '{epoch}': trial ends in epoch '{max_epochs}'"
+            )
+
+        index = self._api.query_index_by_arch(str(topology))
+        info = self._api.get_more_info(index, self._benchmark, epoch, max_epochs)
+        return ArchitectureResult(
+            architecture=topology,
+            index=index,
+            train=Metrics.from_nats(info, Set.TRAIN),
+            val=Metrics.from_nats(info, Set.VAL),
+            test=Metrics.from_nats(info, Set.TEST),
+        )
