@@ -5,6 +5,7 @@ from typing import Literal
 
 import nats_bench
 import nats_bench.api_topology
+import nats_bench.api_utils
 
 
 class Set(str, Enum):
@@ -76,6 +77,9 @@ class ArchitectureResult:
     train: Metrics
     val: Metrics | None
     test: Metrics
+    flops: float
+    size_parameters: float
+    latency: float
     architecture: CellTopology = field(repr=False)
 
 
@@ -100,10 +104,16 @@ class NatsBenchTopology:
 
         index = self._api.query_index_by_arch(str(topology))
         info = self._api.get_more_info(index, self._benchmark, epoch, max_epochs)
+        api_results: nats_bench.api_utils.ArchResults = self._api.query_by_index(index, hp=max_epochs)
+        computational_cost = api_results.get_compute_costs(self._benchmark)
+
         return ArchitectureResult(
             architecture=topology,
             index=index,
             train=Metrics.from_nats(info, Set.TRAIN),
             val=Metrics.from_nats(info, Set.VAL),
             test=Metrics.from_nats(info, Set.TEST),
+            flops=computational_cost["flops"],
+            size_parameters=computational_cost["params"],
+            latency=computational_cost["latency"],
         )
