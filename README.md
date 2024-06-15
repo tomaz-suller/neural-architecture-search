@@ -26,7 +26,7 @@ Experiments over Simulated Annealing for Neural Architecture Search in benchmark
 │                         the creator's initials, and a short `-` delimited description, e.g.
 │                         `1.0-jqp-initial-data-exploration`.
 │
-├── pyproject.toml     <- Project configuration file with package metadata for simulated_annealing
+├── pyproject.toml     <- Project configuration file with package metadata for nas
 │                         and configuration for tools like black
 │
 ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
@@ -39,23 +39,15 @@ Experiments over Simulated Annealing for Neural Architecture Search in benchmark
 │
 ├── setup.cfg          <- Configuration file for flake8
 │
-└── simulated_annealing                <- Source code for use in this project.
+└── nas                <- Source code for use in this project.
     │
-    ├── __init__.py    <- Makes simulated_annealing a Python module
+    ├── __init__.py    <- Makes nas a Python module
     │
-    ├── data           <- Scripts to download or generate data
-    │   └── make_dataset.py
+    ├── algorithm      <- Optimisation algorithms
+    │   └── simulated_annealing.py
     │
-    ├── features       <- Scripts to turn raw data into features for modeling
-    │   └── build_features.py
-    │
-    ├── models         <- Scripts to train models and then use trained models to make
-    │   │                 predictions
-    │   ├── predict_model.py
-    │   └── train_model.py
-    │
-    └── visualization  <- Scripts to create exploratory and results oriented visualizations
-        └── visualize.py
+    └── benchmark      <- Wrappers on top of NAS benchmarks
+        └── nats_bench.py
 ```
 
 --------

@@ -2,7 +2,7 @@
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_NAME = simulated-annealing
+PROJECT_NAME = nas
 PYTHON_VERSION = 3.12
 PYTHON_INTERPRETER = python
 
@@ -30,17 +30,17 @@ clean:
 ## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
 lint:
-	ruff check simulated_annealing
+	ruff check nas
 
 ## Fix ruff warnings
 .PHONY: fix
 fix:
-	ruff fix simulated_annealing
+	ruff fix nas
 
 ## Format source code with ruff
 .PHONY: format
 format:
-	ruff format simulated_annealing
+	ruff format nas
 
 
 
