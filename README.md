@@ -26,7 +26,7 @@ Experiments over Simulated Annealing for Neural Architecture Search in benchmark
 │                         the creator's initials, and a short `-` delimited description, e.g.
 │                         `1.0-jqp-initial-data-exploration`.
 │
-├── pyproject.toml     <- Project configuration file with package metadata for simulatted_annealing
+├── pyproject.toml     <- Project configuration file with package metadata for simulated_annealing
 │                         and configuration for tools like black
 │
 ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
@@ -39,9 +39,9 @@ Experiments over Simulated Annealing for Neural Architecture Search in benchmark
 │
 ├── setup.cfg          <- Configuration file for flake8
 │
-└── simulatted_annealing                <- Source code for use in this project.
+└── simulated_annealing                <- Source code for use in this project.
     │
-    ├── __init__.py    <- Makes simulatted_annealing a Python module
+    ├── __init__.py    <- Makes simulated_annealing a Python module
     │
     ├── data           <- Scripts to download or generate data
     │   └── make_dataset.py

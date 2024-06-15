@@ -26,20 +26,20 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-## Lint using flake8 and black (use `make format` to do formatting)
+## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
 lint:
-	ruff check simulatted_annealing
+	ruff check simulated_annealing
 
-## Lint using flake8 and black (use `make format` to do formatting)
+## Fix ruff warnings
 .PHONY: fix
 fix:
-	ruff fix simulatted_annealing
+	ruff fix simulated_annealing
 
-## Format source code with black
+## Format source code with ruff
 .PHONY: format
 format:
-	ruff format simulatted_annealing
+	ruff format simulated_annealing
 
 
 

@@ -3,7 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "simulatted_annealing"
+name = "simulated_annealing"
 version = "0.0.1"
 description = "Experiments over Simulated Annealing for Neural Architecture Search in benchmark datasets."
 authors = [
@@ -91,5 +91,5 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint.isort]
-known-first-party = ["simulatted_annealing"]
+known-first-party = ["simulated_annealing"]
 force-sort-within-sections = true
