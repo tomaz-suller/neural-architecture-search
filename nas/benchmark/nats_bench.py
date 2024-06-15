@@ -43,7 +43,10 @@ class CellTopology:
     edge_2_to_3: Operation
 
     def __str__(self) -> str:
-        return "|{}~0|+|{}~0|{}~1|+|{}~0|{}~1|{}~2|".format(
+        return "|{}~0|+|{}~0|{}~1|+|{}~0|{}~1|{}~2|".format(*self)
+
+    def __iter__(self):
+        yield from (
             self.edge_0_to_1,
             self.edge_0_to_2,
             self.edge_1_to_2,
