@@ -2,6 +2,7 @@ ipykernel
 mkdocs
 nats_bench
 pip
+pre-commit
 python-dotenv
 ruff
 -e .
