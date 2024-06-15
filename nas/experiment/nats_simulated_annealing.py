@@ -13,8 +13,7 @@ def generate_neighbour(
 
 
 if __name__ == "__main__":
-    from pathlib import Path
-
+    from nas import _REPO_ROOT
     from nas.benchmark.nats_bench import NatsBenchTopology, Benchmark
     from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
 
@@ -24,8 +23,7 @@ if __name__ == "__main__":
     NUMBER_EDGES = 6
 
     # TODO Write utils with paths
-    REPO_ROOT = Path(__file__).parent.parent.parent
-    NATS_PATH = REPO_ROOT / "models" / "NATS-tss-v1_0-3ffb9-simple"
+    NATS_PATH = _REPO_ROOT / "models" / "NATS-tss-v1_0-3ffb9-simple"
 
     nats_bench = NatsBenchTopology(NATS_PATH, Benchmark.CIFAR10)
     rng = np.random.default_rng(SEED)
