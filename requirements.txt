@@ -1,6 +1,7 @@
 dvc
 hydra-core
 ipykernel
+loguru
 mkdocs
 numpy
 nats_bench
