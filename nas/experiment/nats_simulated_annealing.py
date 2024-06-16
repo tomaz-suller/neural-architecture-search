@@ -36,11 +36,7 @@ def main(cfg: DictConfig) -> None:
     )
     current_results = nats_bench.query(current_topology)
 
-    cooling_schedule = CoolingSchedule(
-        cfg.optimiser.cooling_schedule.initial,
-        cfg.optimiser.number_iterations,
-    )
-    parameter_generator = cooling_schedule.linear()
+    _, parameter_generator = CoolingSchedule.from_config(cfg.optimiser.cooling_schedule)
 
     for i, control_parameter in enumerate(parameter_generator):
         neighbour = generate_neighbour(current_topology, rng)

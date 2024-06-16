@@ -2,4 +2,6 @@ algorithm: simulated_annealing
 number_iterations: 100
 cooling_schedule:
   initial: 1
-  type: linear
+  length: ${..number_iterations}
+  type: exponential
+  decay_rate: 0.98

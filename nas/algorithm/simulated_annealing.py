@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
+from typing import Iterator
 
 import numpy as np
+from omegaconf import DictConfig
 
 
 @dataclass
@@ -12,6 +14,19 @@ class CoolingSchedule:
 
     def __post_init__(self):
         self.current = self.initial
+
+    @staticmethod
+    def from_config(cfg: DictConfig) -> tuple["CoolingSchedule", Iterator[float]]:
+        schedule = CoolingSchedule(
+            cfg.initial,
+            cfg.get("length", None),
+            cfg.get("min", None),
+        )
+        if cfg.type == "linear":
+            generator = schedule.linear()
+        elif cfg.type == "exponential":
+            generator = schedule.exponential(cfg.decay_rate)
+        return schedule, generator
 
     def _exponential_update(self, decay_rate: float, **_):
         self.current *= decay_rate
