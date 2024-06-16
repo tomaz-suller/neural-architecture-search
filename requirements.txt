@@ -4,7 +4,7 @@ ipykernel
 loguru
 mkdocs
 numpy
-nats_bench
+nats-bench==1.8
 omegaconf
 pip
 pre-commit
