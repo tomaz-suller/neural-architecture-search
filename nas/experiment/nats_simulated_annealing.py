@@ -17,7 +17,7 @@ def generate_neighbour(
 
 @hydra.main(
     version_base=None,
-    config_path=str(_REPO_ROOT / "conf"),
+    config_path=str(_REPO_ROOT / "config"),
     config_name="config",
 )
 def main(cfg: DictConfig) -> None:
