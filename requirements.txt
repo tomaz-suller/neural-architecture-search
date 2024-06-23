@@ -3,6 +3,7 @@ hydra-core
 ipykernel
 loguru
 mkdocs
+mlflow
 numpy
 nats-bench==1.8
 omegaconf
