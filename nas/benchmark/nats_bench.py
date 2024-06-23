@@ -112,7 +112,13 @@ class NatsBenchTopology:
             )
 
         index = self._api.query_index_by_arch(str(topology))
-        info = self._api.get_more_info(index, self._benchmark, epoch, max_epochs)
+        info = self._api.get_more_info(
+            index,
+            self._benchmark,
+            epoch,
+            max_epochs,
+            is_random=False,
+        )
         api_results: nats_bench.api_utils.ArchResults = self._api.query_by_index(
             index, hp=max_epochs
         )
