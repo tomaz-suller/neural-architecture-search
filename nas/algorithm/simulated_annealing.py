@@ -70,5 +70,7 @@ def accept_transition(
     difference = new_value - old_value
     if difference < 0:
         return True
+    if control_parameter == 0:
+        return False
     acceptance_probability = np.exp(-difference / control_parameter)
     return acceptance_probability > rng.random()
