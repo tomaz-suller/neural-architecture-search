@@ -1,7 +1,10 @@
 import logging
+import pickle
+from pathlib import Path
 
 import hydra
 from loguru import logger
+import mlflow
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 
@@ -39,6 +42,8 @@ def main(cfg: DictConfig) -> None:
     from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
     from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
 
+    cfg["results_dir"] = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+
     logger.debug(
         "Executing experiment with the following config:\n{}", OmegaConf.to_yaml(cfg)
     )
@@ -61,6 +66,7 @@ def main(cfg: DictConfig) -> None:
     _, parameter_generator = CoolingSchedule.from_config(cfg.optimiser.cooling_schedule)
 
     logger.info("Starting optimisation run")
+    optimisation_metrics: list[dict[str, float]] = []
     for i, control_parameter in enumerate(parameter_generator):
         neighbour = generate_neighbour(current_topology, rng)
         logger.debug("Candidate topology is '{}'", neighbour)
@@ -68,6 +74,17 @@ def main(cfg: DictConfig) -> None:
         do_transition = accept_transition(
             neighbour_results.val.loss, current_results.val.loss, control_parameter, rng
         )
+
+        # Save parameters before (possibly) overwriting current
+        optimisation_metrics.append(
+            {
+                "control_parameter": control_parameter,
+                "current_val_loss": current_results.val.loss,
+                "neighbour_val_loss": neighbour_results.val.loss,
+                "transition": float(do_transition),
+            }
+        )
+
         if do_transition:
             logger.debug("Moving to candidate topology")
             current_topology = neighbour
@@ -76,13 +93,35 @@ def main(cfg: DictConfig) -> None:
             logger.debug("Staying in the same topology")
 
         logger.info("Iteration {}", i + 1)
-        logger.info("    Control parameter    {}", control_parameter)
-        logger.info("    Validation loss      {}", current_results.val.loss)
+        logger.debug("    Control parameter    {}", control_parameter)
+        logger.debug("    Validation loss      {}", current_results.val.loss)
 
     logger.success("Optimisation run concluded")
     logger.info("Optimisation result")
     logger.info("    Topology           '{}'", current_topology)
     logger.info("    Validation loss    {}", current_results.val.loss)
+
+    # Save final optimisation results
+    # TODO Consider how to do this without duplicating code
+    optimisation_metrics.append(
+        {
+            "control_parameter": control_parameter,
+            "current_val_loss": current_results.val.loss,
+        }
+    )
+
+    logger.info("Logging experiment parameters on MLFlow")
+    mlflow.set_tracking_uri(_REPO_ROOT / cfg.results_base_dir / "mlruns")
+    experiment = mlflow.set_experiment(cfg.experiment_name)
+    with mlflow.start_run():
+        mlflow.log_params(OmegaConf.to_container(cfg))
+        for i, step_metrics in enumerate(optimisation_metrics):
+            mlflow.log_metrics(step_metrics, i)
+        final_result_path = Path(cfg.results_dir) / "result.pkl"
+        with final_result_path.open("wb") as f:
+            pickle.dump(current_results, f)
+        mlflow.log_artifact(str(final_result_path))
+    logger.success("Logged parameters to experiment ID {}", experiment.experiment_id)
 
 
 if __name__ == "__main__":

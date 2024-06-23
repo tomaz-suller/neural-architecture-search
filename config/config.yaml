@@ -3,4 +3,19 @@ defaults:
   - optimiser: simulated_annealing
   - benchmark: nats_bench_topology
 
+results_base_dir: results
+results_dir: "???"
+experiment_name: ${now:%Y-%m-%dT%H:%M:%S}
 seed: 42
+
+hydra:
+  run:
+    dir: ${results_base_dir}/run/experiment=${experiment_name}
+  sweep:
+    dir: ${results_base_dir}/sweep/experiment=${experiment_name}
+    subdir: ${hydra.job.override_dirname}
+  job:
+    name: ${experiment_name}
+    config:
+      override_dirname:
+        exclude_keys: ["experiment_name"]
