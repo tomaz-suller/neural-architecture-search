@@ -101,26 +101,26 @@ def main(cfg: DictConfig) -> None:
     logger.info("    Topology           '{}'", current_topology)
     logger.info("    Validation loss    {}", current_results.val.loss)
 
-    # Save final optimisation results
-    # TODO Consider how to do this without duplicating code
-    optimisation_metrics.append(
-        {
-            "control_parameter": control_parameter,
-            "current_val_loss": current_results.val.loss,
-        }
-    )
-
     logger.info("Logging experiment parameters on MLFlow")
     mlflow.set_tracking_uri(_REPO_ROOT / cfg.results_base_dir / "mlruns")
     experiment = mlflow.set_experiment(cfg.experiment_name)
     with mlflow.start_run():
         mlflow.log_params(OmegaConf.to_container(cfg))
+
         for i, step_metrics in enumerate(optimisation_metrics):
             mlflow.log_metrics(step_metrics, i)
+        # Save final optimisation results
+        mlflow.log_metrics(
+            {
+                "final_val_loss": current_results.val.loss,
+            }
+        )
+
         final_result_path = Path(cfg.results_dir) / "result.pkl"
         with final_result_path.open("wb") as f:
             pickle.dump(current_results, f)
         mlflow.log_artifact(str(final_result_path))
+
     logger.success("Logged parameters to experiment ID {}", experiment.experiment_id)
 
 
