@@ -42,7 +42,7 @@ def main(cfg: DictConfig) -> None:
     from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
     from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
 
-    cfg["results_dir"] = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    cfg.results_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
 
     logger.debug(
         "Executing experiment with the following config:\n{}", OmegaConf.to_yaml(cfg)
