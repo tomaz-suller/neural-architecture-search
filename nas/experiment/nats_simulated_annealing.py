@@ -33,6 +33,21 @@ def generate_neighbour(
     return CellTopology(*topology_operations)
 
 
+def flatten(container: dict) -> dict:
+    flat_container = {}
+    for key, value in container.items():
+        if not isinstance(value, (dict, list)):
+            flat_container[key] = value
+            continue
+        if isinstance(value, dict):
+            replacement_dict = flatten(value)
+        elif isinstance(value, list):
+            replacement_dict = {i: value_i for i, value_i in enumerate(value)}
+        for nested_key, nested_value in replacement_dict.items():
+            flat_container[f"{key}__{nested_key}"] = nested_value
+    return flat_container
+
+
 @hydra.main(
     version_base=None,
     config_path=str(_REPO_ROOT / "config"),
@@ -105,7 +120,7 @@ def main(cfg: DictConfig) -> None:
     mlflow.set_tracking_uri(_REPO_ROOT / cfg.results_base_dir / "mlruns")
     experiment = mlflow.set_experiment(cfg.experiment_name)
     with mlflow.start_run():
-        mlflow.log_params(OmegaConf.to_container(cfg))
+        mlflow.log_params(flatten(OmegaConf.to_object(cfg)))
 
         for i, step_metrics in enumerate(optimisation_metrics):
             mlflow.log_metrics(step_metrics, i)
