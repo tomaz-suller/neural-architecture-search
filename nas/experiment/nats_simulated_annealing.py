@@ -88,7 +88,10 @@ def main(cfg: DictConfig) -> None:
         logger.debug("Candidate topology is '{}'", neighbour)
         neighbour_results = nats_bench.query(neighbour)
         do_transition = accept_transition(
-            neighbour_results.val.loss, current_results.val.loss, control_parameter, rng
+            neighbour_results.val.accuracy,
+            current_results.val.accuracy,
+            control_parameter,
+            rng,
         )
 
         # Save parameters before (possibly) overwriting current
@@ -108,13 +111,13 @@ def main(cfg: DictConfig) -> None:
             logger.debug("Staying in the same topology")
 
         logger.info("Iteration {}", i + 1)
-        logger.debug("    Control parameter    {}", control_parameter)
-        logger.debug("    Validation loss      {}", current_results.val.loss)
+        logger.debug("    Control parameter     {}", control_parameter)
+        logger.debug("    Validation accuracy   {}", current_results.val.accuracy)
 
     logger.success("Optimisation run concluded")
     logger.info("Optimisation result")
-    logger.info("    Topology           '{}'", current_topology)
-    logger.info("    Validation loss    {}", current_results.val.loss)
+    logger.info("    Topology               '{}'", current_topology)
+    logger.info("    Validation accuracy    {}", current_results.val.accuracy)
 
     logger.info("Logging experiment parameters on MLFlow")
     mlflow.set_tracking_uri(_REPO_ROOT / cfg.results_base_dir / "mlruns")
