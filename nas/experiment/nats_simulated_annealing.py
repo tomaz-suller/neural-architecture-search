@@ -92,6 +92,7 @@ def main(cfg: DictConfig) -> None:
             current_results.val.accuracy,
             control_parameter,
             rng,
+            direction="max",
         )
 
         # Save parameters before (possibly) overwriting current

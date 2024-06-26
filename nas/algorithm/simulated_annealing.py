@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Iterator
+from typing import Iterator, Literal
 
 import numpy as np
 from omegaconf import DictConfig
@@ -66,8 +66,10 @@ def accept_transition(
     old_value: float,
     control_parameter: float,
     rng: np.random.Generator,
+    direction: Literal["max", "min"] = "max",
 ) -> bool:
     difference = new_value - old_value
+    difference *= -1 if direction == "max" else 1
     if difference < 0:
         return True
     if control_parameter == 0:
