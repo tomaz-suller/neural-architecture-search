@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import logging
 import pickle
 from pathlib import Path
@@ -94,9 +95,8 @@ def main(cfg: DictConfig) -> None:
         optimisation_metrics.append(
             {
                 "control_parameter": control_parameter,
-                "current_val_loss": current_results.val.loss,
-                "neighbour_val_loss": neighbour_results.val.loss,
                 "transition": float(do_transition),
+                **asdict(current_results.val),
             }
         )
 
@@ -127,7 +127,8 @@ def main(cfg: DictConfig) -> None:
         # Save final optimisation results
         mlflow.log_metrics(
             {
-                "final_val_loss": current_results.val.loss,
+                f"final_{key}": value
+                for key, value in asdict(current_results.val).items()
             }
         )
 
