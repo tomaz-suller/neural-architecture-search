@@ -67,6 +67,7 @@ select = [
 ]
 ignore = [
     "COM812", "COM819",  # incompatible with formatter
+    "S301",  # suspicious-pickle-usage
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
