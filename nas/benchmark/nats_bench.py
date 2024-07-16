@@ -55,6 +55,10 @@ class CellTopology:
             self.edge_2_to_3,
         )
 
+    @staticmethod
+    def number_operations() -> int:
+        return 6
+
 
 @dataclass
 class Metrics:
