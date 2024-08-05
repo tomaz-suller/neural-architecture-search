@@ -12,5 +12,6 @@ pip
 pre-commit
 python-dotenv
 ruff
+seaborn
 git+https://github.com/tomaz-suller/neural-simulated-annealing.git#egg=neuralsa
 -e .
