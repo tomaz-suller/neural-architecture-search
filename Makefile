@@ -58,7 +58,9 @@ create_environment:
 # PROJECT RULES                                                                 #
 #################################################################################
 
-
+## Spin up MLFlow server
+mlflow:
+	mlflow server --backend-store-uri results/mlruns/
 
 #################################################################################
 # Self Documenting Commands                                                     #
