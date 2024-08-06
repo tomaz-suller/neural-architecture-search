@@ -1,8 +1,29 @@
 from dataclasses import dataclass, field
-from typing import Iterator, Literal
+from typing import Iterator
 
 import numpy as np
 from omegaconf import DictConfig
+
+from . import TrialOptimiser
+
+
+@dataclass(kw_only=True)
+class SimulatedAnnealing(TrialOptimiser):
+    cooling_schedule: Iterator[float]
+    _control_parameter: float = field(init=False)
+
+    def _accept_transition(self) -> bool:
+        difference = self.evaluator(self.candidate) - self.evaluator(self.current)
+        difference *= -1 if self.maximise else 1
+        if difference < 0:
+            return True
+        if self._control_parameter == 0:
+            return False
+        acceptance_probability = np.exp(-difference / self._control_parameter)
+        return acceptance_probability > self.rng.random()
+
+    def _update_state(self):
+        self._control_parameter = next(self.cooling_schedule)
 
 
 @dataclass
@@ -52,27 +73,9 @@ class CoolingSchedule:
             raise ValueError("One of 'length' or 'min' must be specified")
         i = 0
         while (self.length is None) or (i < self.length):
-            # self.current
             yield self.current
             update_params["iteration"] = i + 1
             parameter_update(**update_params)
             i += 1
             if (self.min_ is not None) and (self.current < self.min_):
                 break
-
-
-def accept_transition(
-    new_value: float,
-    old_value: float,
-    control_parameter: float,
-    rng: np.random.Generator,
-    direction: Literal["max", "min"] = "max",
-) -> bool:
-    difference = new_value - old_value
-    difference *= -1 if direction == "max" else 1
-    if difference < 0:
-        return True
-    if control_parameter == 0:
-        return False
-    acceptance_probability = np.exp(-difference / control_parameter)
-    return acceptance_probability > rng.random()

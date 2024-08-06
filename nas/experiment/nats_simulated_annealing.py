@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from functools import cache
 import logging
 import pickle
 from pathlib import Path
@@ -25,15 +26,6 @@ logger.remove()  # Prevent duplicate logs in stdout
 logger.add(PropagateHandler(), format="{message}")
 
 
-def generate_neighbour(
-    topology: CellTopology, rng: np.random.Generator
-) -> CellTopology:
-    topology_operations = list(topology)
-    random_edge = rng.integers(0, len(topology_operations))
-    topology_operations[random_edge] = Operation(rng.choice(Operation))
-    return CellTopology(*topology_operations)
-
-
 def flatten(container: dict) -> dict:
     flat_container = {}
     for key, value in container.items():
@@ -56,7 +48,20 @@ def flatten(container: dict) -> dict:
 )
 def main(cfg: DictConfig) -> None:
     from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
-    from nas.algorithm.simulated_annealing import CoolingSchedule, accept_transition
+    from nas.algorithm import TrialOptimiser
+    from nas.algorithm.simulated_annealing import SimulatedAnnealing, CoolingSchedule
+
+    def generate_neighbour(optimiser: TrialOptimiser) -> CellTopology:
+        topology: CellTopology = optimiser.current
+        topology_operations = list(topology)
+        random_edge = optimiser.rng.integers(0, len(topology_operations))
+        topology_operations[random_edge] = Operation(optimiser.rng.choice(Operation))
+        return CellTopology(*topology_operations)
+
+    @cache
+    def nats_evaluator(topology: CellTopology) -> float:
+        results = nats_bench.query(topology)
+        return results.val.accuracy
 
     cfg.results_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
 
@@ -77,25 +82,26 @@ def main(cfg: DictConfig) -> None:
         *(Operation(i) for i in rng.choice(Operation, cfg.benchmark.edges_per_cell))
     )
     logger.info("Initial topology is '{}'", current_topology)
-    current_results = nats_bench.query(current_topology)
 
     _, parameter_generator = CoolingSchedule.from_config(cfg.optimiser.cooling_schedule)
+    optimiser: TrialOptimiser = SimulatedAnnealing(
+        maximise=True,  # optimising accuracy
+        rng=rng,
+        evaluator=nats_evaluator,
+        current=current_topology,
+        candidate_generator=generate_neighbour,
+        cooling_schedule=parameter_generator,
+    )
 
     logger.info("Starting optimisation run")
     optimisation_metrics: list[dict[str, float]] = []
-    for i, control_parameter in enumerate(parameter_generator):
-        neighbour = generate_neighbour(current_topology, rng)
-        logger.debug("Candidate topology is '{}'", neighbour)
-        neighbour_results = nats_bench.query(neighbour)
-        do_transition = accept_transition(
-            neighbour_results.val.accuracy,
-            current_results.val.accuracy,
-            control_parameter,
-            rng,
-            direction="max",
-        )
+    for i in range(cfg.optimiser.number_iterations):
+        optimiser.step()
 
-        # Save parameters before (possibly) overwriting current
+        logger.debug("Logging optimisation metrics")
+        control_parameter = optimiser._control_parameter
+        do_transition = optimiser._accept_transition()
+        current_results = nats_bench.query(optimiser.current)
         optimisation_metrics.append(
             {
                 "control_parameter": control_parameter,
@@ -104,12 +110,12 @@ def main(cfg: DictConfig) -> None:
             }
         )
 
-        if do_transition:
-            logger.debug("Moving to candidate topology")
-            current_topology = neighbour
-            current_results = neighbour_results
-        else:
-            logger.debug("Staying in the same topology")
+        logger.debug("Candidate topology is '{}'", optimiser.candidate)
+        logger.debug(
+            "Moving to candidate topology"
+            if do_transition
+            else "Staying in the same topology"
+        )
 
         logger.info("Iteration {}", i + 1)
         logger.debug("    Control parameter     {}", control_parameter)
