@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from functools import cache
 from pathlib import Path
 from typing import Literal
 
@@ -108,7 +107,6 @@ class NatsBenchTopology:
         self._api = nats_bench.create(str(path), "topology", not eager, verbose)
         self._benchmark = benchmark
 
-    @cache
     def query(
         self,
         topology: CellTopology,
