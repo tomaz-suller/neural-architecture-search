@@ -137,8 +137,14 @@ def main(cfg: DictConfig) -> None:
         # Save final optimisation results
         mlflow.log_metrics(
             {
-                f"final_{key}": value
+                f"final_val_{key}": value
                 for key, value in asdict(current_results.val).items()
+            }
+        )
+        mlflow.log_metrics(
+            {
+                f"final_test_{key}": value
+                for key, value in asdict(current_results.test).items()
             }
         )
 
