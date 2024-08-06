@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from functools import cache
+import gc
 import logging
 import pickle
 from pathlib import Path
@@ -58,7 +58,6 @@ def main(cfg: DictConfig) -> None:
         topology_operations[random_edge] = Operation(optimiser.rng.choice(Operation))
         return CellTopology(*topology_operations)
 
-    @cache
     def nats_evaluator(topology: CellTopology) -> float:
         results = nats_bench.query(topology)
         return results.val.accuracy
@@ -154,6 +153,10 @@ def main(cfg: DictConfig) -> None:
         mlflow.log_artifact(str(final_result_path))
 
     logger.success("Logged parameters to experiment ID {}", experiment.experiment_id)
+
+    del optimiser
+    del optimisation_metrics
+    gc.collect()
 
 
 if __name__ == "__main__":
