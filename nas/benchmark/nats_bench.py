@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import cache
 from pathlib import Path
 from typing import Literal
 
@@ -55,6 +56,9 @@ class CellTopology:
             self.edge_2_to_3,
         )
 
+    def __hash__(self) -> int:
+        return hash((operation for operation in self))
+
     @staticmethod
     def number_operations() -> int:
         return 6
@@ -104,6 +108,7 @@ class NatsBenchTopology:
         self._api = nats_bench.create(str(path), "topology", not eager, verbose)
         self._benchmark = benchmark
 
+    @cache
     def query(
         self,
         topology: CellTopology,
