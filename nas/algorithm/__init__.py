@@ -9,8 +9,8 @@ class TrialOptimiser:
     maximise: bool
     rng: numpy.random.Generator
     evaluator: Callable[..., float]
-    current: Any
     candidate_generator: Callable | None
+    current: Any | None = None
     candidate: Any | None = field(init=False)
 
     def _generate_candidate(self):

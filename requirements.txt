@@ -8,6 +8,7 @@ mlflow
 numpy
 nats-bench==1.8
 omegaconf
+optuna
 pip
 pre-commit
 python-dotenv

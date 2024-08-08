@@ -1,0 +1,5 @@
+algorithm: optuna
+number_iterations: 100
+sampler: RandomSampler
+sampler_args:
+  seed: ${seed}
