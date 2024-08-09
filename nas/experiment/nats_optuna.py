@@ -85,7 +85,7 @@ def main(cfg: DictConfig) -> None:
 
     # Start from a random cell topology
     current_topology = CellTopology(
-        *(Operation(i) for i in rng.choice(Operation, cfg.benchmark.edges_per_cell))
+        *(Operation(i) for i in rng.choice(Operation, CellTopology.number_operations()))
     )
     logger.info("Initial topology is '{}'", current_topology)
 
