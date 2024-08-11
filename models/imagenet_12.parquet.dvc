@@ -1,0 +1,5 @@
+outs:
+- md5: 5d455dcc3664244385a869e592f011b0
+  size: 1605689
+  hash: md5
+  path: imagenet_12.parquet
