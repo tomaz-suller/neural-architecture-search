@@ -1,0 +1,5 @@
+outs:
+- md5: 23f43241ad22d9c1e9f6742e6836350c
+  size: 1583385
+  hash: md5
+  path: cifar10_200.parquet
