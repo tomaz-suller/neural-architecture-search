@@ -1,0 +1,202 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{Simulated Annealing for Neural Architecture Search}
+\author{Tomaz Maia Suller}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Background}
+
+\subsection{Simulated Annealing}
+Simulated Annealing (SA) is a classical black-box combinatorial
+optimisation technique, which is however not widely adopted in
+Neural Architecture Search (NAS) in favour of more advanced
+black-box techniques (usually employing some form of surrogate),
+or of white-box, gradient based ones.
+
+\subsection{Neural Simulated Annealing}
+Neural Simulated Annealing gets its inspiration from
+the formalisation of combinatorial optimisation as Markov decision
+processes, and proposes the use of a reinforcement learning agent
+to determine actions to take at each state of the optimisation
+process; in the context of NAS, neural network architectures
+represent states, and modifications over some component of an
+architecture represent actions.
+
+\subsection{Neural Architecture Search Benchmarks}
+The NATS-Bench topology dataset \cite{nats-bench}, previously
+known as NAS-Bench-201, provides training and evaluation metrics
+for all 15625 possible models according to its cell-based topology
+for up to 200 training epochs over three image classification
+datasets: CIFAR-10, CIFAR-100 and ImageNet.
+
+
+\section{Methodology}
+Following initial experiments to determine plausible ranges over
+which to experiment with the NAS algorithm parameters, two main
+experiments were conducted:
+first, SA with a constant control parameter equal to zero,
+equivalent to greedy search;
+second, SA with non-zero control parameter, with initial value set
+to 1 and an exponential decay profile with varying decay rate.
+In all experiments, the algorithm was executed for 300 trials.
+
+
+\section{Results and Discussion}
+
+% \subsection{Greedy Search}
+% \subsection{Simulated Annealing}
+
+\subsection{Optimality of the search process}
+Over all datasets, we see that even implementing a completely
+greedy search strategy, the optimisation process is able to reach
+optimal architectures, as illustrated in
+Figure \ref{fig:greedy:optimal}.
+Figure \ref{fig:sa:optimal} illustrates the optimality of the search
+process employing SA, showing that overall SA is more successful in
+reaching the optimal architecture than greedy search.
+This behaviour is expected as SA is specifically designed to avoid
+local optima, which greedy search is susceptible to.
+
+\begin{figure}[hp]
+    \begin{subfigure}[b]{0.9\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/sa_cifar10_zero_temperature/optimal}
+        \caption{CIFAR-10.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.9\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/sa_cifar100_zero_temperature/optimal}
+        \caption{CIFAR-100.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.9\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/sa_imagenet_zero_temperature/optimal}
+        \caption{ImageNet.}
+    \end{subfigure}
+    \caption{
+        Accuracy of architectures from greedy search process,
+        showing initialisations for which such architecture was
+        the optimal one (green).
+    }
+    \label{fig:greedy:optimal}
+\end{figure}
+
+\begin{figure}[hp]
+    \begin{subfigure}[b]{0.6\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/sa_cifar10/optimal}
+        \caption{CIFAR-10.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.6\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/sa_cifar100/optimal}
+        \caption{CIFAR-100.}
+    \end{subfigure}
+    \hfill
+    \begin{center}
+        \begin{subfigure}[b]{0.6\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_imagenet/optimal}
+            \caption{ImageNet.}
+        \end{subfigure}
+    \end{center}
+    \caption{
+        Accuracy of architectures from Simulated Annealing,
+        showing initialisations for which such architecture was
+        the optimal one (green).
+    }
+    \label{fig:sa:optimal}
+\end{figure}
+
+Figure \ref{fig:sa:optimal} also seems to indicate, contrary
+to expectation, that search processes with faster decay schedules
+(i.e. with smaller decay rates) reach optimality more often.
+This assertion needs to be explored further, but given the success
+of completely greedy search, it is hypothesised that the NATS-Bench
+search space does not contain many local minima, leading search
+processes which more rapidly turn to exploitation rather than
+exploration to avoid local minima close to the initial architecture
+and converge more rapidly to the global minimum.
+
+\subsection{Optimisation histories}
+Figure \ref{fig:history} illustrates the optimisation histories
+over both greedy search and SA for all datasets with multiple random
+initialisations, and multiple control parameter decay rates for SA
+(the bold line illustrates average results).
+
+\begin{figure}[htbp]
+    \begin{subfigure}[b]{\textwidth}
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_cifar10_zero_temperature/history_log}
+            \caption{Greedy search.}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_cifar10/history_log}
+            \caption{Simulated Annealing.}
+        \end{subfigure}
+        \centering
+        \caption*{CIFAR-10.}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\textwidth}
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_cifar100_zero_temperature/history_log}
+            \caption{Greedy search.}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_cifar100/history_log}
+            \caption{Simulated Annealing.}
+        \end{subfigure}
+        \centering
+        \caption*{CIFAR-100.}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\textwidth}
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_imagenet_zero_temperature/history_log}
+            \caption{Greedy search.}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/sa_imagenet/history_log}
+            \caption{Simulated Annealing.}
+        \end{subfigure}
+        \centering
+        \caption*{ImageNet.}
+    \end{subfigure}
+    \caption{
+        Comparison between optimisation histories for each algorithm
+        and each dataset. Colours represent different random
+        initialisations.
+        In the simpler CIFAR datasets, greedy search
+        reaches more accurate architectures faster, which is not the
+        case for the more demanding ImageNet dataset.
+    }
+    \label{fig:history}
+\end{figure}
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{bibliography}
+
+\end{document}
