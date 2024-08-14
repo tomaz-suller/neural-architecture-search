@@ -48,6 +48,15 @@ second, SA with non-zero control parameter, with initial value set
 to 1 and an exponential decay profile with varying decay rate.
 In all experiments, the algorithm was executed for 300 trials.
 
+In both experiments, optimisation was performed over the validation
+accuracy after 12 epochs of training, which is a proxy for the
+test accuracy after full training for 200 epochs.
+This follows the methodology employed by \cite{nats-bench},
+and is based on the need to evaluate several architectures, making
+200 epochs of training computationally infeasible in practice.
+The use os a NAS benchmark, however, allows us to experiment with
+both settings without incurring any additional computational costs.
+
 
 \section{Results and Discussion}
 
