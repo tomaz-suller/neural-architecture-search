@@ -1,0 +1,7 @@
+name: NAS_BENCH_301
+path: models/surrogates
+model_dirname: nb_models
+data_filename: nb301_full_training.pickle
+performance_model: xgb
+time_model: lgb_runtime
+version: "1.0"

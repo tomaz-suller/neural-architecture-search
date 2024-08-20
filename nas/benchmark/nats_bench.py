@@ -7,6 +7,8 @@ import nats_bench
 import nats_bench.api_topology
 import nats_bench.api_utils
 
+from . import Benchmark, Metrics, Result
+
 
 class Set(str, Enum):
     TRAIN = "train"
@@ -64,25 +66,7 @@ class CellTopology:
 
 
 @dataclass
-class Metrics:
-    loss: float | None
-    accuracy: float | None
-    time_per_epoch: float | None
-    time: float | None
-
-    @staticmethod
-    def from_nats(info: dict[str, float], set_: Set) -> "Metrics":
-        set_name = set_.value
-        return Metrics(
-            loss=info.get(f"{set_name}-loss", None),
-            accuracy=info.get(f"{set_name}-accuracy", None),
-            time_per_epoch=info.get(f"{set_name}-per-time", None),
-            time=info.get(f"{set_name}-all-time", None),
-        )
-
-
-@dataclass
-class ArchitectureResult:
+class ArchitectureResult(Result):
     index: int
     train: Metrics
     val: Metrics | None
@@ -93,19 +77,19 @@ class ArchitectureResult:
     architecture: CellTopology = field(repr=False)
 
 
-class NatsBenchTopology:
+class NatsBenchTopology(Benchmark):
     _api: nats_bench.api_topology.NATStopology
-    _benchmark: Dataset
+    _dataset: Dataset
 
     def __init__(
         self,
         path: Path | None,
-        benchmark: Dataset,
+        dataset: str | Dataset,
         eager: bool = False,
         verbose: bool = False,
     ):
         self._api = nats_bench.create(str(path), "topology", not eager, verbose)
-        self._benchmark = benchmark
+        self._dataset = dataset if isinstance(dataset, Dataset) else Dataset[dataset]
 
     def query(
         self,
@@ -121,7 +105,7 @@ class NatsBenchTopology:
         index = self._api.query_index_by_arch(str(topology))
         info = self._api.get_more_info(
             index,
-            self._benchmark,
+            self._dataset,
             epoch,
             max_epochs,
             is_random=False,
@@ -129,15 +113,25 @@ class NatsBenchTopology:
         api_results: nats_bench.api_utils.ArchResults = self._api.query_by_index(
             index, hp=max_epochs
         )
-        computational_cost = api_results.get_compute_costs(self._benchmark)
+        computational_cost = api_results.get_compute_costs(self._dataset)
 
         return ArchitectureResult(
             architecture=topology,
             index=index,
-            train=Metrics.from_nats(info, Set.TRAIN),
-            val=Metrics.from_nats(info, Set.VAL),
-            test=Metrics.from_nats(info, Set.TEST),
+            train=self._info_to_metrics(info, Set.TRAIN),
+            val=self._info_to_metrics(info, Set.VAL),
+            test=self._info_to_metrics(info, Set.TEST),
             flops=computational_cost["flops"],
             size_parameters=computational_cost["params"],
             latency=computational_cost["latency"],
+        )
+
+    @staticmethod
+    def _info_to_metrics(info: dict[str, float], set_: Set) -> Metrics:
+        set_name = set_.value
+        return Metrics(
+            loss=info.get(f"{set_name}-loss", None),
+            accuracy=info.get(f"{set_name}-accuracy", None),
+            time_per_epoch=info.get(f"{set_name}-per-time", None),
+            time=info.get(f"{set_name}-all-time", None),
         )

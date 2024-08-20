@@ -11,7 +11,6 @@ import numpy as np
 from omegaconf import DictConfig, OmegaConf
 
 from nas import _REPO_ROOT
-from nas.benchmark.nats_bench import CellTopology, Operation
 
 
 # Add logging handler to loguru for Hydra compatibility
@@ -47,19 +46,26 @@ def flatten(container: dict) -> dict:
     config_name="config",
 )
 def main(cfg: DictConfig) -> None:
-    from nas.benchmark.nats_bench import NatsBenchTopology, Dataset
+    from naslib.search_spaces import NasBench301SearchSpace
+
+    from nas.benchmark.nats_bench import CellTopology, Operation
+    from nas.benchmark import SearchSpace
     from nas.algorithm import TrialOptimiser
     from nas.algorithm.simulated_annealing import SimulatedAnnealing, CoolingSchedule
 
-    def generate_neighbour(optimiser: TrialOptimiser) -> CellTopology:
+    def nats_neighbour_generator(optimiser: TrialOptimiser) -> CellTopology:
         topology: CellTopology = optimiser.current
         topology_operations = list(topology)
         random_edge = optimiser.rng.integers(0, len(topology_operations))
         topology_operations[random_edge] = Operation(optimiser.rng.choice(Operation))
         return CellTopology(*topology_operations)
 
-    def nats_evaluator(topology: CellTopology) -> float:
-        results = nats_bench.query(topology)
+    def naslib_neighbour_generator(optimiser: TrialOptimiser) -> CellTopology:
+        architecture: NasBench301SearchSpace = optimiser.current
+        return architecture.get_nbhd()[0].arch
+
+    def evaluator(architecture) -> float:
+        results = benchmark.query(architecture)
         return results.val.accuracy
 
     cfg.results_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
@@ -68,27 +74,35 @@ def main(cfg: DictConfig) -> None:
         "Executing experiment with the following config:\n{}", OmegaConf.to_yaml(cfg)
     )
 
-    nats_bench = NatsBenchTopology(
-        _REPO_ROOT / cfg.benchmark.path,
-        Dataset[cfg.benchmark.dataset],
-    )
-    logger.success("Loaded NATS-Bench Topology")
+    # TODO Review benchmark configuration names
+    search_space, benchmark = SearchSpace.benchmark_from_name(**cfg.benchmark)
+    logger.success(f"Loaded {cfg.benchmark.name}")
 
     rng = np.random.default_rng(cfg.seed)
 
     # Start from a random cell topology
-    current_topology = CellTopology(
-        *(Operation(i) for i in rng.choice(Operation, CellTopology.number_operations()))
-    )
-    logger.info("Initial topology is '{}'", current_topology)
+    if search_space == SearchSpace.NATS_BENCH_TOPOLOGY:
+        current_architecture = CellTopology(
+            *(
+                Operation(i)
+                for i in rng.choice(Operation, CellTopology.number_operations())
+            )
+        )
+        neighbour_generator = nats_neighbour_generator
+    elif search_space == SearchSpace.NAS_BENCH_301:
+        current_architecture = NasBench301SearchSpace()
+        current_architecture.sample_random_architecture()
+        neighbour_generator = naslib_neighbour_generator
+
+    logger.info("Initial architecture is '{}'", current_architecture)
 
     _, parameter_generator = CoolingSchedule.from_config(cfg.optimiser.cooling_schedule)
     optimiser: TrialOptimiser = SimulatedAnnealing(
         maximise=True,  # optimising accuracy
         rng=rng,
-        evaluator=nats_evaluator,
-        current=current_topology,
-        candidate_generator=generate_neighbour,
+        evaluator=evaluator,
+        current=current_architecture,
+        candidate_generator=neighbour_generator,
         cooling_schedule=parameter_generator,
     )
 
@@ -100,7 +114,7 @@ def main(cfg: DictConfig) -> None:
         logger.debug("Logging optimisation metrics")
         control_parameter = optimiser._control_parameter
         do_transition = optimiser._accept_transition()
-        current_results = nats_bench.query(optimiser.current)
+        current_results = benchmark.query(optimiser.current)
         optimisation_metrics.append(
             {
                 "control_parameter": control_parameter,
@@ -122,7 +136,7 @@ def main(cfg: DictConfig) -> None:
 
     logger.success("Optimisation run concluded")
     logger.info("Optimisation result")
-    logger.info("    Topology               '{}'", current_topology)
+    logger.info("    Topology               '{}'", current_architecture)
     logger.info("    Validation accuracy    {}", current_results.val.accuracy)
 
     logger.info("Logging experiment parameters on MLFlow")
@@ -140,12 +154,12 @@ def main(cfg: DictConfig) -> None:
                 for key, value in asdict(current_results.val).items()
             }
         )
-        mlflow.log_metrics(
-            {
-                f"final_test_{key}": value
-                for key, value in asdict(current_results.test).items()
-            }
-        )
+        # mlflow.log_metrics(
+        #     {
+        #         f"final_test_{key}": value
+        #         for key, value in asdict(current_results.test).items()
+        #     }
+        # )
 
         final_result_path = Path(cfg.results_dir) / "result.pkl"
         with final_result_path.open("wb") as f:
