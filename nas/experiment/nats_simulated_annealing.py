@@ -115,13 +115,14 @@ def main(cfg: DictConfig) -> None:
         control_parameter = optimiser._control_parameter
         do_transition = optimiser._accept_transition()
         current_results = benchmark.query(optimiser.current)
-        optimisation_metrics.append(
-            {
-                "control_parameter": control_parameter,
-                "transition": float(do_transition),
-                **asdict(current_results.val),
-            }
-        )
+        current_results_dict: dict[str, float] = {
+            key: value
+            for key, value in asdict(current_results.val).items()
+            if value is not None
+        }
+        current_results_dict["control_parameter"] = control_parameter
+        current_results_dict["transition"] = float(do_transition)
+        optimisation_metrics.append(current_results_dict)
 
         logger.debug("Candidate topology is '{}'", optimiser.candidate)
         logger.debug(
@@ -152,6 +153,7 @@ def main(cfg: DictConfig) -> None:
             {
                 f"final_val_{key}": value
                 for key, value in asdict(current_results.val).items()
+                if value is not None
             }
         )
         # mlflow.log_metrics(
