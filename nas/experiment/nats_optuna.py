@@ -109,13 +109,15 @@ def main(cfg: DictConfig) -> None:
     logger.info("Starting optimisation run")
     optimisation_metrics: list[dict[str, float]] = []
     for i in range(cfg.optimiser.number_iterations):
+        logger.debug("Current   topology is '{}'", optimiser.current)
+
         optimiser.step()
+
+        logger.debug("Candidate topology is '{}'", optimiser.candidate)
 
         logger.debug("Logging optimisation metrics")
         current_results = nats_bench.query(optimiser.current)
         optimisation_metrics.append(asdict(current_results.val))
-
-        logger.debug("Candidate topology is '{}'", optimiser.candidate)
 
         logger.info("Iteration {}", i + 1)
         logger.debug("    Validation accuracy   {}", current_results.val.accuracy)

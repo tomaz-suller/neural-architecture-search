@@ -110,11 +110,15 @@ def main(cfg: DictConfig) -> None:
     logger.info("Starting optimisation run")
     optimisation_metrics: list[dict[str, float]] = []
     for i in range(cfg.optimiser.number_iterations):
+        logger.debug("Current   topology is '{}'", optimiser.current)
+
         optimiser.step()
+
+        logger.debug("Candidate topology is '{}'", optimiser.candidate)
 
         logger.debug("Logging optimisation metrics")
         control_parameter = optimiser._control_parameter
-        do_transition = optimiser._accept_transition()
+        do_transition = optimiser.current is optimiser.candidate
         current_results = benchmark.query(optimiser.current)
         current_results_dict: dict[str, float] = {
             key: value
@@ -125,7 +129,6 @@ def main(cfg: DictConfig) -> None:
         current_results_dict["transition"] = float(do_transition)
         optimisation_metrics.append(current_results_dict)
 
-        logger.debug("Candidate topology is '{}'", optimiser.candidate)
         logger.debug(
             "Moving to candidate topology"
             if do_transition
