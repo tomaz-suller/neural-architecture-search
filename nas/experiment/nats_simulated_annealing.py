@@ -54,6 +54,7 @@ def main(cfg: DictConfig) -> None:
     from nas.algorithm.simulated_annealing import SimulatedAnnealing, CoolingSchedule
 
     def nats_neighbour_generator(optimiser: TrialOptimiser) -> CellTopology:
+        # TODO: Force new architecture to be different
         topology: CellTopology = optimiser.current
         topology_operations = list(topology)
         random_edge = optimiser.rng.integers(0, len(topology_operations))
