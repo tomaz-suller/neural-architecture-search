@@ -58,9 +58,29 @@ create_environment:
 # PROJECT RULES                                                                 #
 #################################################################################
 
+REMOTE_SERVER = nas
+REMOTE_REPO_ROOT = ~/neural-architecture-search
+REMOTE = ${REMOTE_SERVER}:${REMOTE_REPO_ROOT}
+RSYNC = rsync \
+		--archive \
+		--cvs-exclude \
+		--human-readable \
+		--partial \
+		--recursive \
+		--update \
+		--info=PROGRESS2
+
 ## Spin up MLFlow server
 mlflow:
 	mlflow server --backend-store-uri results/mlruns/
+
+## Upload experiment files to remote server
+upload:
+	${RSYNC} . ${REMOTE}
+
+## Download results from remote server
+download:
+	${RSYNC} ${REMOTE}/results .
 
 #################################################################################
 # Self Documenting Commands                                                     #
