@@ -2,6 +2,7 @@ from dataclasses import asdict
 import gc
 import logging
 import pickle
+import random
 from pathlib import Path
 
 import hydra
@@ -79,7 +80,10 @@ def main(cfg: DictConfig) -> None:
     search_space, benchmark = SearchSpace.benchmark_from_name(**cfg.benchmark)
     logger.success(f"Loaded {cfg.benchmark.name}")
 
+    # Set random seeds
     rng = np.random.default_rng(cfg.seed)
+    np.random.seed(cfg.seed)  # noqa: NPY002
+    random.seed(cfg.seed)
 
     # Start from a random cell topology
     if search_space == SearchSpace.NATS_BENCH_TOPOLOGY:
