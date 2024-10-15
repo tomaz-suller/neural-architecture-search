@@ -1,5 +1,9 @@
 /data/
 
+# Tool caches
+/.dvc
+/.ruff_cache
+
 # VS Code
 /.vscode
 
