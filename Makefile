@@ -63,7 +63,6 @@ REMOTE_REPO_ROOT = ~/neural-architecture-search
 REMOTE = ${REMOTE_SERVER}:${REMOTE_REPO_ROOT}
 RSYNC = rsync \
 		--archive \
-		--cvs-exclude \
 		--human-readable \
 		--partial \
 		--recursive \
@@ -76,7 +75,7 @@ mlflow:
 
 ## Upload experiment files to remote server
 upload:
-	${RSYNC} . ${REMOTE}
+	${RSYNC} --filter=':- .gitignore' . ${REMOTE}
 
 ## Download results from remote server
 download:
