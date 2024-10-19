@@ -29,7 +29,7 @@ class Api: ...
 @dataclass
 class NasBench301Result(Result):
     val: Metrics
-    architecture: NasBench301SearchSpace = field(repr=False)
+    architecture: tuple = field(repr=False)
 
 
 class NasBench301(Benchmark):
@@ -75,6 +75,6 @@ class NasBench301(Benchmark):
             Metric.VAL_ACCURACY, dataset_api=self._api
         )
         return NasBench301Result(
-            architecture=architecture,
+            architecture=architecture.get_compact(),
             val=Metrics(accuracy=val_accuracy, time=train_time),
         )
