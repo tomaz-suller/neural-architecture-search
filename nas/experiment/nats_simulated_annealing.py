@@ -145,7 +145,7 @@ def main(cfg: DictConfig) -> None:
 
     logger.success("Optimisation run concluded")
     logger.info("Optimisation result")
-    logger.info("    Topology               '{}'", current_architecture)
+    logger.info("    Topology               '{}'", optimiser.current)
     logger.info("    Validation accuracy    {}", current_results.val.accuracy)
 
     logger.info("Logging experiment parameters on MLFlow")
