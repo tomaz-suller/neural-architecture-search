@@ -1,3 +1,12 @@
 name: NATS_BENCH_TOPOLOGY
 path: models/NATS-tss-v1_0-3ffb9-simple
 dataset: CIFAR10
+
+initial:
+  manual: false
+  '0': ???
+  '1': ???
+  '2': ???
+  '3': ???
+  '4': ???
+  '5': ???

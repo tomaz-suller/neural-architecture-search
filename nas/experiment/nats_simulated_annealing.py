@@ -85,19 +85,28 @@ def main(cfg: DictConfig) -> None:
     np.random.seed(cfg.seed)  # noqa: NPY002
     random.seed(cfg.seed)
 
-    # Start from a random cell topology
+    # Set initial cell topology
     if search_space == SearchSpace.NATS_BENCH_TOPOLOGY:
-        current_architecture = CellTopology(
-            *(
-                Operation(i)
-                for i in rng.choice(Operation, CellTopology.number_operations())
-            )
-        )
         neighbour_generator = nats_neighbour_generator
+        if cfg.benchmark.initial.manual:
+            initial_operations = cfg.benchmark.initial
+            current_architecture = CellTopology(
+                *(
+                    Operation(initial_operations[str(i)])
+                    for i in range(CellTopology.number_operations())
+                )
+            )
+        else:
+            current_architecture = CellTopology(
+                *(
+                    Operation(i)
+                    for i in rng.choice(Operation, CellTopology.number_operations())
+                )
+            )
     elif search_space == SearchSpace.NAS_BENCH_301:
+        neighbour_generator = naslib_neighbour_generator
         current_architecture = NasBench301SearchSpace()
         current_architecture.sample_random_architecture()
-        neighbour_generator = naslib_neighbour_generator
 
     logger.info("Initial architecture is '{}'", current_architecture)
 
