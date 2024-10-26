@@ -41,6 +41,7 @@ class NasBench301(Benchmark):
         performance_model: str | PerformanceModel,
         time_model: str | TimeModel,
         version: str = "1.0",
+        **_,
     ):
         self.path = Path(path)
         self.model_dir = self.path / f"{model_dirname}_{version}"

@@ -87,6 +87,7 @@ class NatsBenchTopology(Benchmark):
         dataset: str | Dataset,
         eager: bool = False,
         verbose: bool = False,
+        **_,
     ):
         self._api = nats_bench.create(str(path), "topology", not eager, verbose)
         self._dataset = dataset if isinstance(dataset, Dataset) else Dataset[dataset]
