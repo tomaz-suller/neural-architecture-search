@@ -83,7 +83,7 @@ class NatsBenchTopology(Benchmark):
 
     def __init__(
         self,
-        path: Path | None,
+        path: str | Path,
         dataset: str | Dataset,
         eager: bool = False,
         verbose: bool = False,
